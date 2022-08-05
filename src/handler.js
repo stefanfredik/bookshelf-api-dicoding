@@ -18,7 +18,7 @@ const addBook = (request, h) => {
   //   return request.payload;
 
   const finished = readPage === pageCount;
-  const insertAt = new Date().toISOString();
+  const insertedAt = new Date().toISOString();
   const updatedAt = new Date().toISOString();
 
   if (!name) {
@@ -49,9 +49,10 @@ const addBook = (request, h) => {
     summary,
     publisher,
     pageCount,
+    readPage,
     reading,
     finished,
-    insertAt,
+    insertedAt,
     updatedAt,
   };
 
@@ -61,13 +62,13 @@ const addBook = (request, h) => {
   if (isSuccess) {
     const response = h.response({
       status: "success",
-      message: "Buku berhasil ditambahkan.",
+      message: "Buku berhasil ditambahkan",
       data: {
         bookId: id,
       },
     });
 
-    response.code(200);
+    response.code(201);
     return response;
   }
 
@@ -81,19 +82,25 @@ const addBook = (request, h) => {
 };
 
 const getBooks = (request, h) => {
+  const allBooks = books.map((book) => ({
+    id: book.id,
+    name: book.name,
+    publisher: book.publisher,
+  }));
+
   const name = request.query.name;
   const reading = request.query.reading;
   const finished = request.query.finished;
 
   if (name) {
-    const book = books.filter((b) =>
+    const book = allBooks.filter((b) =>
       String(b.name).toLocaleLowerCase().includes(name.toLocaleLowerCase())
     );
 
     const response = h.response({
       status: "success",
       data: {
-        book,
+        books: book,
       },
     });
 
@@ -103,21 +110,35 @@ const getBooks = (request, h) => {
 
   if (reading) {
     if (reading === "1") {
-      const book = books.filter((b) => b.reading === true);
+      const book = books
+        .filter((b) => b.reading === true)
+        .map((book) => ({
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher,
+        }));
+
       const response = h.response({
         status: "success",
         data: {
-          book,
+          books: book,
         },
       });
       response.code(200);
       return response;
     } else if (reading === "0") {
-      const book = books.filter((b) => b.reading === false);
+      const book = books
+        .filter((b) => b.reading === false)
+        .map((book) => ({
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher,
+        }));
+
       const response = h.response({
         status: "success",
         data: {
-          book,
+          books: book,
         },
       });
       response.code(200);
@@ -127,21 +148,33 @@ const getBooks = (request, h) => {
 
   if (finished) {
     if (finished === "1") {
-      const book = books.filter((b) => b.finished === true);
+      const book = books
+        .filter((b) => b.finished === true)
+        .map((book) => ({
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher,
+        }));
       const response = h.response({
         status: "success",
         data: {
-          book,
+          books: book,
         },
       });
       response.code(200);
       return response;
-    } else if (finished === "0") {
-      const book = books.filter((b) => b.finished === false);
+    } else {
+      const book = books
+        .filter((b) => b.finished === false)
+        .map((book) => ({
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher,
+        }));
       const response = h.response({
         status: "success",
         data: {
-          book,
+          books: book,
         },
       });
       response.code(200);
@@ -153,7 +186,7 @@ const getBooks = (request, h) => {
   const response = h.response({
     status: "success",
     data: {
-      books,
+      books: allBooks,
     },
   });
 
@@ -181,7 +214,7 @@ const getBookId = (request, h) => {
     status: "fail",
     message: "Buku tidak ditemukan",
   });
-  response.code(400);
+  response.code(404);
   return response;
 };
 
@@ -197,13 +230,14 @@ const editBook = (request, h) => {
     readPage,
     reading,
   } = request.payload;
+
   const updatedAt = new Date().toISOString();
   const finished = readPage === pageCount;
 
   if (!name) {
     const response = h.response({
       status: "fail",
-      message: "Gagal menambahkan buku. Mohon isi nama buku",
+      message: "Gagal memperbarui buku. Mohon isi nama buku",
     });
     response.code(400);
     return response;
@@ -213,7 +247,7 @@ const editBook = (request, h) => {
     const response = h.response({
       status: "fail",
       message:
-        "Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount",
+        "Gagal memperbarui buku. readPage tidak boleh lebih besar dari pageCount",
     });
 
     response.code(400);
@@ -232,13 +266,14 @@ const editBook = (request, h) => {
       publisher,
       pageCount,
       reading,
+      readPage,
       finished,
       updatedAt,
     };
 
     const response = h.response({
       status: "success",
-      message: "Buku berhasil diperbaharui",
+      message: "Buku berhasil diperbarui",
     });
 
     response.code(200);
